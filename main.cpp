@@ -65,39 +65,55 @@ int main(int argc, char const *argv[])
   hconcat(colsToAppend, image2, image2);
 
   Mat imageFinal1 = 0.75 * image1 + 0.25 * image2;
+  imwrite("./output_images/Q1O.jpg", imageFinal1);
+
   //================//
   // Task 2: Part 1 //
   //================//
   Mat image3 = imread("./input_images/img3.jpg");
   Mat image4 = imread("./input_images/img4.jpg");
-  //{Top Left, Bottom Left, Top Right}
-  Point2f srcTri[3] = {Point2f(0, 0), Point2f(0, image3.rows), Point2f(image3.cols, 0)};
-  Point2f dstTri[3] = {Point2f(1220, 378), Point2f(1220, 516), Point2f(1310, 378)};
+  //{bottom right , Bottom Left, Top Right}
+  Point2f srcTri[3] = {Point2f(image3.cols, image3.rows), Point2f(0, image3.rows), Point2f(image3.cols, 0)};
+  Point2f dstTri[3] = {Point2f(1310, 516), Point2f(1220, 516), Point2f(1310, 378)};
 
   image4 = getAffinedMatrix(image3, image4, srcTri, dstTri);
+  imwrite("./output_images/Q2O1.jpg", image4);
+
   //================//
   // Task 2: Part 2 //
   //================//
   Mat image5 = imread("./input_images/img5.jpg");
-  Point2f srcTri2[3] = {Point2f(0, 0), Point2f(0, image3.rows), Point2f(image3.cols, 0)};
-  Point2f dstTri2[3] = {Point2f(370, 90), Point2f(326, 525), Point2f(705, 128)};
+  Point2f srcTri2[3] = {Point2f(image3.cols, image3.rows), Point2f(0, image3.rows), Point2f(image3.cols, 0)};
+  Point2f dstTri2[3] = {Point2f(663, 557), Point2f(326, 525), Point2f(705, 128)};
 
   image5 = getAffinedMatrix(image3, image5, srcTri2, dstTri2);
+  imwrite("./output_images/Q2O2.jpg", image5);
+
+
   //================//
   // Task 3: Part 1 //
   //================//
   Mat image6 = imread("./input_images/img6.jpg");
-  Point2f srcPts[4] = {Point2f(0, 0), Point2f(0, image3.rows), Point2f(image3.cols, 0), Point2f(image3.cols, image3.rows)};
-  Point2f dstPts[4] = {Point2f(164, 37), Point2f(160, 387), Point2f(468, 70), Point2f(462, 350)};
+
+  Point2f srcPts[4] = { Point2f(0, image3.rows), Point2f(image3.cols, 0), Point2f(image3.cols, image3.rows),Point2f(0, 0) };
+  Point2f dstPts[4] = { Point2f(158, 389), Point2f(468, 70), Point2f(463, 353), Point2f(164, 37) };
+
+  Mat image6Bad = getAffinedMatrix(image3, image6, srcPts, dstPts);
+  imwrite("./output_images/Q3O1.jpg", image6Bad);
+
+
+  //================//
+  // Task 3: Part 2 //
+  //================//
 
   image6 = getHomographiedMatrix(image3, image6, srcPts, dstPts);
-
-  String windowName = "My Image trial";
-
-  namedWindow(windowName);
-  imshow(windowName, image6);
+  // String windowName = "My Image trial";
+  // namedWindow(windowName);
+  // imshow(windowName, image6);
+//image Q3O2 
+  imwrite("./output_images/Q3O2.jpg", image6);
 
   waitKey(0);
-  destroyWindow(windowName);
+  // destroyWindow(windowName);
   return 0;
 }
