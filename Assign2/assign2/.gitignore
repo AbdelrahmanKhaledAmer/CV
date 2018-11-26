@@ -1,0 +1,8 @@
+*.exe
+*.vscode
+Assign2.sln
+Assign2.vcxproj
+Assign2.vcxproj.filters
+Assign2.vcxproj.user
+x64/
+.vs/
