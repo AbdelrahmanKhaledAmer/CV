@@ -1,3 +1,5 @@
+// Abdelrahman Khaled Amer 34-9791 T-15
+// Mohamed Ahmed Mohamed 34-6141 T-11
 #include <opencv2/opencv.hpp>
 #include <iostream>
 using namespace cv;
@@ -28,30 +30,22 @@ int main(int argc, char **argv)
 	Mat image8 = imread("./imagesA2/8.jpg");
 
 	
-	 /*printf("image 1\n");
-	  process(image1);
-	  printf("\nimage 2\n");
-	  process(image2);
-	  printf("\nimage 3\n");
-	  process(image3);
-	  printf("\nimage 4\n");
-	  process(image4);
-	  printf("\nimage 5\n");
-	  process(image5);
-	  printf("\nimage 6\n");
-	  process(image6);
-	  printf("\nimage 7\n");
-	  process(image7);
-	  printf("\nimage 8\n");
-	  process(image8);
-*/
-	 namedWindow("Source", WINDOW_NORMAL);
+	Mat images[] =  {image1,image2,image3,image4,image5,image6,image7,image8 };
+	for (int i = 1; i <= 8; i++)
+	{
+		Mat dst = process(images[i-1]);
+		imwrite("./outputImagesA2/modified_"+ std::to_string(i)+".jpg", dst);
+		printf("\n\n");
+	}
+	 /*namedWindow("Source", WINDOW_NORMAL);
 	 namedWindow("Destination", WINDOW_NORMAL);
 	 resizeWindow("Source", 600, 500);
 	 resizeWindow("Destination", 600, 500);
-	 imshow("Source", image8);
-	 Mat dst = process(image8);
-	 imshow("Destination", dst);
+	 imshow("Source", image8);*/
+	 //Mat dst = process(image8);
+	 //imshow("Destination", dst);
+
+	 //imwrite("./outputImagesA2/modified_8.jpg", dst);
 	 waitKey(0);
 
 	return 0;
@@ -150,7 +144,7 @@ Mat fixBlur(Mat img) {
 	if (measureBlur(img) < 0.25)
 	{
 		printf("fixing blurry image\n");
-		return applyUnsharpFilter(img, 0.2);
+		return applyUnsharpFilter(img, 0.7);
 	}
 	return img;
 }
