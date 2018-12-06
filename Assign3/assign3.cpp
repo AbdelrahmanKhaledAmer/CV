@@ -4,7 +4,7 @@ using namespace cv;
 
 Mat SSD(Mat, Mat);
 void getMinMaxIntensities(Mat, double *, double *);
-Mat applyContrastStretching(Mat, int, int);
+Mat applyNormalization(Mat, int, int);
 
 int main(int argc, char **argv)
 {
@@ -16,14 +16,14 @@ int main(int argc, char **argv)
     // std::cout << left.rows << ":" << left.cols << std::endl;
     // std::cout << right.rows << ":" << right.cols << std::endl;
 
-    Mat Cssd = applyContrastStretching(SSD(left, right), 0, 255);
+    Mat Cssd = applyNormalization(SSD(left, right), 0, 255);
     Cssd.convertTo(Cssd, CV_8U);
 
     // std::cout << Cssd.rows << ":" << Cssd.cols << std::endl;
     // std::cout << Cssd << std::endl;
 
-    // namedWindow("Full Image");
-    // imshow("Full Image", image);
+    namedWindow("Full Image");
+    imshow("Full Image", image);
     // namedWindow("Left Image");
     // imshow("Left Image", left);
     // namedWindow("Right Image");
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
 Mat SSD(Mat first, Mat second)
 {
-    Mat result(Size(first.cols, first.rows), CV_16U);
+    Mat result(Size(first.cols, first.rows), CV_32F);
     int rangeRight = 0;
     int rangeLeft = 75;
     int rangeUp = 0;
@@ -49,14 +49,14 @@ Mat SSD(Mat first, Mat second)
     {
         for (int fcol = 0; fcol < first.cols; fcol++)
         {
-            std::vector<unsigned int> ssds = {};
+            std::vector<double> ssds = {};
             // Check the pixels in the second image that are within range
-            for (int srow = frow - rangeLeft; srow <= frow + rangeRight; srow++)
+            for (int srow = frow - rangeUp; srow <= frow + rangeDown; srow++)
             {
-                for (int scol = fcol - rangeUp; scol <= fcol + rangeDown; scol++)
+                for (int scol = fcol - rangeLeft; scol <= fcol + rangeRight; scol++)
                 {
                     // Compute SSD
-                    unsigned int sum = 0;
+                    double sum = 0;
                     for (int row = -windowSize / 2; row <= windowSize / 2; row++)
                     {
                         for (int col = -windowSize / 2; col <= windowSize / 2; col++)
@@ -67,11 +67,7 @@ Mat SSD(Mat first, Mat second)
                             int escol = scol + col;
                             if (efrow >= 0 && efrow < first.rows && efcol >= 0 && efcol < first.cols && esrow >= 0 && esrow < second.rows && escol >= 0 && escol < second.cols)
                             {
-                                // std::cout << "Effective Row First: " << efrow << std::endl;
-                                // std::cout << "Effective Col First: " << efcol << std::endl;
-                                // std::cout << "Effective Row Second: " << esrow << std::endl;
-                                // std::cout << "Effective Col Second: " << escol << std::endl;
-                                int sqDiff = first.at<uchar>(efrow, efcol) - second.at<uchar>(esrow, escol);
+                                double sqDiff = (double)first.at<uchar>(efrow, efcol) - (double)second.at<uchar>(esrow, escol);
                                 sqDiff *= sqDiff;
                                 sum += sqDiff;
                             }
@@ -80,12 +76,12 @@ Mat SSD(Mat first, Mat second)
                     ssds.push_back(sum);
                 }
             }
-            unsigned int maxElement = 0;
-            for (const unsigned int &i : ssds)
+            double minElement = windowSize * windowSize * 255 * 255;
+            for (const double &i : ssds)
             {
-                maxElement = (i > maxElement) ? i : maxElement;
+                minElement = (i < minElement) ? i : minElement;
             }
-            result.at<unsigned int>(frow, fcol) = maxElement;
+            result.at<double>(frow, fcol) = minElement;
         }
     }
     return result;
@@ -96,10 +92,10 @@ void getMinMaxIntensities(Mat img, double *min, double *max)
     minMaxLoc(img, min, max);
 }
 
-Mat applyContrastStretching(Mat img, int minIntensity, int maxIntensity)
+Mat applyNormalization(Mat img, int minIntensity, int maxIntensity)
 {
     double minActual, maxActual;
     getMinMaxIntensities(img, &minActual, &maxActual);
-    Mat dst = ((img - minActual) * ((maxIntensity - minIntensity) / (maxActual - minActual))) + minIntensity;
+    Mat dst = ((img - minActual) * (((double)maxIntensity - (double)minIntensity) / (maxActual - minActual))) + (double)minIntensity;
     return dst;
 }
