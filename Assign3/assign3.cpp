@@ -1,3 +1,9 @@
+/**
+ * Computer Vission Assignment 3
+ * Mohamed Ahmed Azab       34-6141
+ * Abdelrahman Khaled Amer  34-9791 
+ **/
+
 #include <opencv2/opencv.hpp>
 #include <iostream>
 using namespace cv;
@@ -14,23 +20,14 @@ int main(int argc, char **argv)
     Mat right = Mat(image, Rect(image.cols / 2, 0, image.cols / 2, image.rows));
     cvtColor(right, right, CV_BGR2GRAY);
 
-    // std::cout << left.rows << ":" << left.cols << std::endl;
-    // std::cout << right.rows << ":" << right.cols << std::endl;
-
     Mat Cssd = SSD(left, right);
-    // std::cout << Cssd.row(0) << std::endl;
     double min, max;
     getMinMaxIntensities(Cssd, &min, &max);
     Cssd = Cssd / max * 255;
     Cssd.convertTo(Cssd, CV_8U);
 
     imwrite("./CSSD.jpg", Cssd);
-    // std::cout << "Rows: " << left.rows << ", Cols: " << left.cols << std::endl;
-    // std::cout << Cssd.rows << ":" << Cssd.cols << std::endl;
-    // std::cout << Cssd.row(0) << std::endl;
 
-    // namedWindow("Full Image");
-    // imshow("Full Image", image);
     namedWindow("Left Image");
     imshow("Left Image", left);
     namedWindow("Right Image");
@@ -56,14 +53,14 @@ Mat SSD(Mat first, Mat second)
     {
         for (int fcol = rangeLeft; fcol < first.cols + rangeLeft; fcol++)
         {
-            std::vector<double> ssds = {};
+            std::vector<float> ssds = {};
             // Check the pixels in the second image that are within range
             for (int srow = frow - rangeUp; srow <= frow + rangeDown; srow++)
             {
                 for (int scol = fcol - rangeLeft; scol <= fcol + rangeRight; scol++)
                 {
                     // Compute SSD
-                    double sum = 0;
+                    float sum = 0;
                     for (int row = -windowSize / 2; row <= windowSize / 2; row++)
                     {
                         for (int col = -windowSize / 2; col <= windowSize / 2; col++)
@@ -74,7 +71,7 @@ Mat SSD(Mat first, Mat second)
                             int escol = scol + col;
                             if (efrow >= 0 && efrow < first.rows && efcol >= 0 && efcol < first.cols && esrow >= 0 && esrow < second.rows && escol >= 0 && escol < second.cols)
                             {
-                                double sqDiff = (double)first.at<uchar>(efrow, efcol) - (double)second.at<uchar>(esrow, escol);
+                                float sqDiff = (float)first.at<uchar>(efrow, efcol) - (float)second.at<uchar>(esrow, escol);
                                 sqDiff *= sqDiff;
                                 sum += sqDiff;
                             }
@@ -83,12 +80,12 @@ Mat SSD(Mat first, Mat second)
                     ssds.push_back(sum);
                 }
             }
-            double minElement = windowSize * windowSize * 255 * 255;
-            for (const double &i : ssds)
+            float minElement = windowSize * windowSize * 255 * 255;
+            for (const float &i : ssds)
             {
                 minElement = (i < minElement) ? i : minElement;
-            }
-            result.at<double>(frow, fcol - rangeLeft) = minElement;
+            };
+            result.at<float>(frow, fcol - rangeLeft) = minElement;
         }
     }
     return result;
