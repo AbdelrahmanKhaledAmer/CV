@@ -4,30 +4,37 @@ using namespace cv;
 
 Mat SSD(Mat, Mat);
 void getMinMaxIntensities(Mat, double *, double *);
-Mat applyNormalization(Mat, int, int);
 
 int main(int argc, char **argv)
 {
     Mat image = imread("./input_images/As3.jpg");
 
     Mat left = Mat(image, Rect(0, 0, image.cols / 2, image.rows));
+    cvtColor(left, left, CV_BGR2GRAY);
     Mat right = Mat(image, Rect(image.cols / 2, 0, image.cols / 2, image.rows));
+    cvtColor(right, right, CV_BGR2GRAY);
 
     // std::cout << left.rows << ":" << left.cols << std::endl;
     // std::cout << right.rows << ":" << right.cols << std::endl;
 
-    Mat Cssd = applyNormalization(SSD(left, right), 0, 255);
+    Mat Cssd = SSD(left, right);
+    // std::cout << Cssd.row(0) << std::endl;
+    double min, max;
+    getMinMaxIntensities(Cssd, &min, &max);
+    Cssd = Cssd / max * 255;
     Cssd.convertTo(Cssd, CV_8U);
 
+    imwrite("./CSSD.jpg", Cssd);
+    // std::cout << "Rows: " << left.rows << ", Cols: " << left.cols << std::endl;
     // std::cout << Cssd.rows << ":" << Cssd.cols << std::endl;
-    // std::cout << Cssd << std::endl;
+    // std::cout << Cssd.row(0) << std::endl;
 
-    namedWindow("Full Image");
-    imshow("Full Image", image);
-    // namedWindow("Left Image");
-    // imshow("Left Image", left);
-    // namedWindow("Right Image");
-    // imshow("Right Image", right);
+    // namedWindow("Full Image");
+    // imshow("Full Image", image);
+    namedWindow("Left Image");
+    imshow("Left Image", left);
+    namedWindow("Right Image");
+    imshow("Right Image", right);
     namedWindow("Output Image");
     imshow("Output Image", Cssd);
     waitKey(0);
@@ -47,7 +54,7 @@ Mat SSD(Mat first, Mat second)
     // For all the pixels in the first image
     for (int frow = 0; frow < first.rows; frow++)
     {
-        for (int fcol = 0; fcol < first.cols; fcol++)
+        for (int fcol = rangeLeft; fcol < first.cols + rangeLeft; fcol++)
         {
             std::vector<double> ssds = {};
             // Check the pixels in the second image that are within range
@@ -81,7 +88,7 @@ Mat SSD(Mat first, Mat second)
             {
                 minElement = (i < minElement) ? i : minElement;
             }
-            result.at<double>(frow, fcol) = minElement;
+            result.at<double>(frow, fcol - rangeLeft) = minElement;
         }
     }
     return result;
@@ -90,12 +97,4 @@ Mat SSD(Mat first, Mat second)
 void getMinMaxIntensities(Mat img, double *min, double *max)
 {
     minMaxLoc(img, min, max);
-}
-
-Mat applyNormalization(Mat img, int minIntensity, int maxIntensity)
-{
-    double minActual, maxActual;
-    getMinMaxIntensities(img, &minActual, &maxActual);
-    Mat dst = ((img - minActual) * (((double)maxIntensity - (double)minIntensity) / (maxActual - minActual))) + (double)minIntensity;
-    return dst;
 }
